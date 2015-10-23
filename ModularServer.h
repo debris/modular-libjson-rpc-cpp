@@ -56,22 +56,33 @@ template <class... Is>
 class ModularServer: public jsonrpc::IProcedureInvokationHandler
 {
 public:
-	ModularServer(jsonrpc::AbstractServerConnector* _connector)
-	: m_connection(_connector), m_handler(jsonrpc::RequestHandlerFactory::createProtocolHandler(jsonrpc::JSONRPC_SERVER_V2, *this))
+	ModularServer()
+	: m_handler(jsonrpc::RequestHandlerFactory::createProtocolHandler(jsonrpc::JSONRPC_SERVER_V2, *this)) {}
+
+	void StartListening()
 	{
-		m_connection->SetHandler(m_handler.get());
+		for (auto const& connector: m_connectors)
+			connector->StartListening();
+	}
+	
+	void StopListening()
+	{
+		for (auto const& connector: m_connectors)
+			connector->StopListening();
 	}
 
-	bool StartListening() { return m_connection->StartListening(); }
-	bool StopListening() { return m_connection->StopListening(); }
+	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, Json::Value const& _input, Json::Value& _output) override {}
+	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override {}
 
-	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, const Json::Value& _input, Json::Value& _output) override {}
-	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, const Json::Value& _input) override {}
-
-private:
-	std::unique_ptr<jsonrpc::AbstractServerConnector> m_connection;
+	unsigned addConnector(jsonrpc::AbstractServerConnector* _connector)
+	{
+		m_connectors.emplace_back(_connector);
+		_connector->SetHandler(m_handler.get());
+		return m_connectors.size() - 1;
+	}
 
 protected:
+	std::vector<std::unique_ptr<jsonrpc::AbstractServerConnector>> m_connectors;
 	std::unique_ptr<jsonrpc::IProtocolHandler> m_handler;
 };
 
@@ -82,7 +93,7 @@ public:
 	using MethodPointer = AbstractMethodPointer<I>;
 	using NotificationPointer = AbstractNotificationPointer<I>;
 
-	ModularServer<I, Is...>(jsonrpc::AbstractServerConnector* _connector, I* _i, Is*... _is): ModularServer<Is...>(_connector, _is...), m_interface(_i)
+	ModularServer<I, Is...>(I* _i, Is*... _is): ModularServer<Is...>(_is...), m_interface(_i)
 	{
 		for (auto const& method: m_interface->methods())
 		{
@@ -97,7 +108,7 @@ public:
 		}
 	}
 
-	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, const Json::Value& _input, Json::Value& _output) override
+	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, Json::Value const& _input, Json::Value& _output) override
 	{
 		auto pointer = m_methods.find(_proc.GetProcedureName());
 		if (pointer != m_methods.end())
@@ -106,7 +117,7 @@ public:
 			ModularServer<Is...>::HandleMethodCall(_proc, _input, _output);
 	}
 
-	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, const Json::Value& _input) override
+	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override
 	{
 		auto pointer = m_notifications.find(_proc.GetProcedureName());
 		if (pointer != m_notifications.end())

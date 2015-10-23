@@ -30,7 +30,7 @@ public:
 	{
 		bindAndAddMethod(jsonrpc::Procedure("eth_gasPrice", jsonrpc::PARAMS_BY_POSITION, jsonrpc::JSON_STRING,  NULL), &AbstractEth::eth_gasPriceI);
 	}
-	
+
 	inline virtual void eth_gasPriceI(const Json::Value &request, Json::Value &response) {
 		response = eth_gasPrice();
 	};
@@ -47,13 +47,12 @@ public:
 
 int main(int argc, char** argv) {
 	
-	ModularServer<SingleMethodServer, SingleMethodServer, Eth> ms(new jsonrpc::HttpServer(8080, "", "", 2),
-																  new SingleMethodServer("first"),
+	ModularServer<SingleMethodServer, SingleMethodServer, Eth> ms(new SingleMethodServer("first"),
 																  new SingleMethodServer("second"),
 																  new Eth);
+	ms.addConnector(new jsonrpc::HttpServer(8080, "", "", 2));
 	ms.StartListening();
 
-	
 	while (true)
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	
