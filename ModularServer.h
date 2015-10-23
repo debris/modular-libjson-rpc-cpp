@@ -81,6 +81,10 @@ public:
 		return m_connectors.size() - 1;
 	}
 
+	jsonrpc::AbstractServerConnector* connector(unsigned _i) {
+		return m_connectors.at(_i).get();
+	}
+
 protected:
 	std::vector<std::unique_ptr<jsonrpc::AbstractServerConnector>> m_connectors;
 	std::unique_ptr<jsonrpc::IProtocolHandler> m_handler;
