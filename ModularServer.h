@@ -71,8 +71,18 @@ public:
 			connector->StopListening();
 	}
 
-	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, Json::Value const& _input, Json::Value& _output) override {}
-	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override {}
+	virtual void HandleMethodCall(jsonrpc::Procedure& _proc, Json::Value const& _input, Json::Value& _output) override
+	{
+		(void)_proc;
+		(void)_input;
+		(void)_output;
+	}
+
+	virtual void HandleNotificationCall(jsonrpc::Procedure& _proc, Json::Value const& _input) override
+	{
+		(void)_proc;
+		(void)_input;
+	}
 
 	unsigned addConnector(jsonrpc::AbstractServerConnector* _connector)
 	{
