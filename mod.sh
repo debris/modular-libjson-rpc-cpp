@@ -2,7 +2,7 @@
 
 FILENAME=$1
 NAME=$2
-INCLUDE_NAME="\"ModularServer.h\""
+INCLUDE_NAME="\"..\\/ModularServer.h\""
 
 echo "fixing ${NAME} in ${FILENAME}"
 
