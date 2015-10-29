@@ -3,7 +3,7 @@ An attempt to modularize libjson-rpc-cpp server.
 
 ## The Problem
 
-Sometimes rpc server has several or more methods. Currently we have to specify all of these methods in a single .json file and implement all of them.
+Sometimes rpc server has several or more methods. Currently we have to specify all of these methods in a single .json file and implement all of them in a single class.
 
 ## Solution
 
